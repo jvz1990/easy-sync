@@ -12,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import model.DataState;
 import model.Device;
 import model.Stopable;
 
@@ -34,7 +35,7 @@ public class Devices extends Thread implements Initializable, Stopable {
     public JFXTreeTableColumn<Device, Boolean> trustedColumn;
     public JFXTreeTableColumn<Device, Boolean> blockedColumn;
 
-    private final TreeItem<Device> root = new RecursiveTreeItem<>(State.deviceList, RecursiveTreeObject::getChildren);
+    private final TreeItem<Device> root = new RecursiveTreeItem<>(DataState.deviceList, RecursiveTreeObject::getChildren);
     public JFXTextField searchField;
     public Label rowCount;
 
@@ -77,7 +78,7 @@ public class Devices extends Thread implements Initializable, Stopable {
 
             long now = System.currentTimeMillis();
 
-            State.deviceList.forEach(device -> {
+            DataState.deviceList.forEach(device -> {
                 if (device.getLastHeardFrom() + 5600 < now) {
                     device.setOnline(false);
                 } else {
@@ -93,7 +94,7 @@ public class Devices extends Thread implements Initializable, Stopable {
 
     private void createBogusDevice() {
         try {
-            State.deviceList.add(new Device(
+            DataState.deviceList.add(new Device(
                     InetAddress.getByName("255.255.255.255"),
                     8888,
                     "bogus",
@@ -128,8 +129,8 @@ public class Devices extends Thread implements Initializable, Stopable {
 
     public static void addToList(Device device) {
         Platform.runLater(() -> {
-            if(State.deviceList.contains(device)) return;
-            State.deviceList.add(device);
+            if(DataState.deviceList.contains(device)) return;
+            DataState.deviceList.add(device);
             Holder.searchField.textProperty().set(" ");
             Holder.searchField.textProperty().set("");
         });
@@ -144,8 +145,8 @@ public class Devices extends Thread implements Initializable, Stopable {
     public void treeListener(KeyEvent keyEvent) {
         if (keyEvent.getCode().equals(KeyCode.DELETE)) {
             Device device = treeTableView.getSelectionModel().getSelectedItem().getValue();
-            State.hiddenDevices.add(device.getUuid());
-            State.deviceList.remove(device);
+            DataState.hiddenDevices.add(device.getUuid());
+            DataState.deviceList.remove(device);
             Holder.searchField.textProperty().set(" ");
             Holder.searchField.textProperty().set("");
         }

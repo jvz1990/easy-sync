@@ -99,7 +99,7 @@ public class SocketProcessor extends Thread implements Stopable {
         }
 
         private void sendAbsolutePath(Message message) {
-            Folder folder = (Folder) State.sharedFolderMap.get(message.aLong);
+            Folder folder = (Folder) DataState.sharedFolderMap.get(message.aLong);
             message.string = new String[1];
             message.string[0] = folder.getAbsolutePath();
             Socket socket = message.socket;
@@ -127,7 +127,7 @@ public class SocketProcessor extends Thread implements Stopable {
             Message reply = new Message();
 
             InetAddress address = socket.getInetAddress();
-            Device device = State.deviceList.parallelStream().filter(item -> item.getInetAddress().equals(address)).findAny().orElse(null);
+            Device device = DataState.deviceList.parallelStream().filter(item -> item.getInetAddress().equals(address)).findAny().orElse(null);
             if (device == null) reply.command = Message.Commands.ERROR;
             else if (device.isFullAccess()) reply.command = Message.Commands.FULL;
             else if (device.isTrusted()) reply.command = Message.Commands.SEMI;
@@ -166,7 +166,7 @@ public class SocketProcessor extends Thread implements Stopable {
                     switch (reply.command) {
                         case DOWNLOAD:
                             reply.string[1] = General.makeOSfriendly(reply.string[1]); // Convert to OS friendly
-                            String fileToWrite = State.getDownloadFolder() + File.separatorChar + message.device.getMachineNameString() + File.separatorChar + reply.string[1];
+                            String fileToWrite = DataState.getDownloadFolder() + File.separatorChar + message.device.getMachineNameString() + File.separatorChar + reply.string[1];
                             new File(fileToWrite).mkdirs(); //make file directory
                             fileToWrite += File.separatorChar + reply.string[0];
                             message.aLong = reply.aLong;
@@ -214,11 +214,11 @@ public class SocketProcessor extends Thread implements Stopable {
         private Folder getFolderFromMessage(Message message) {
             switch (message.command) {
                 case GET_SHARED_FOLDER:
-                    if (State.rootFolder == null) BackgroundTask.mineSharedFolder();
-                    return State.rootFolder;
+                    if (DataState.rootFolder == null) BackgroundTask.mineSharedFolder();
+                    return DataState.rootFolder;
                 case BROWSE_ROOT:
-                    if (State.userFolder == null) BackgroundTask.mineUserFolder();
-                    return State.userFolder;
+                    if (DataState.userFolder == null) BackgroundTask.mineUserFolder();
+                    return DataState.userFolder;
             }
             return null;
         }
@@ -307,7 +307,7 @@ public class SocketProcessor extends Thread implements Stopable {
         }
 
         private void uploadFileFolder(final Message message) {
-            FileFolder fileFolder = State.sharedFolderMap.get(message.aLong);
+            FileFolder fileFolder = DataState.sharedFolderMap.get(message.aLong);
             IFile iFile = null;
             Folder folder = null;
 

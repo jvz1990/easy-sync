@@ -25,14 +25,20 @@ public class Devices extends Thread implements Stopable {
                 continue;
             }
 
-            if(State.hiddenDevices.contains(device.getUuid())) continue;
+            if(DataState.hiddenDevices.contains(device.getUuid())) continue;
 
-            for (Device existing : State.deviceList) {
+            for (Device existing : DataState.deviceList) {
                 if (existing.equals(device)) {
                     found = true;
                     // Detect if name has been changed if uuid is same
                     if (!existing.getMachineName().get().equals(device.getMachineName().get())) {
                         existing.setMachineName(device.getMachineName().get());
+                    }
+                    if(!existing.getInetAddress().equals(device.getInetAddress())) {
+                        existing.setInetAddress(device.getInetAddress());
+                    }
+                    if(existing.getPortNo() != device.getPortNo()) {
+                        existing.setPortNo(device.getPortNo());
                     }
                     existing.setLastHeardFrom(System.currentTimeMillis());
                     break;

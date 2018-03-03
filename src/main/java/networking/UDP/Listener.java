@@ -1,5 +1,6 @@
 package networking.UDP;
 
+import model.DataState;
 import model.Device;
 import model.Devices;
 import model.Stopable;
@@ -57,7 +58,7 @@ public class Listener extends Thread implements Stopable {
                 objectInputStream.close();
                 objectInputStream = null;
 
-                if (receivedPacket.getMachineUUID().compareTo(State.Holder.getUuid()) != 0) {
+                if (receivedPacket.getMachineUUID().compareTo(DataState.Holder.getUuid()) != 0) {
                     Devices.add(
                             new Device(
                                     datagramPacket.getAddress(),

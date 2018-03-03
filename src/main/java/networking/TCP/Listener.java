@@ -1,5 +1,6 @@
 package networking.TCP;
 
+import model.DataState;
 import model.Stopable;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class Listener extends Thread implements Stopable {
     }
 
     private void init() throws IOException {
-        serverSocket = new ServerSocket(State.Holder.getPortNoTCP());
+        serverSocket = new ServerSocket(DataState.Holder.getPortNoTCP());
         socketProcessor = new SocketProcessor(sockets);
         socketProcessor.start();
     }

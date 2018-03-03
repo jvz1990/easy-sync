@@ -115,9 +115,24 @@ public class FileFolderExplorer implements Initializable {
         this.itemList.clear();
         if (folder.getParent() != null) { // TODO
             this.itemList.add(new ExplorerRowItem(folder.getParent(), true));
+        } else {
+            Folder requestedFolder = fetchParentFolder();
+            if (requestedFolder != null) {
+                this.itemList.add(new ExplorerRowItem(requestedFolder, true));
+            }
         }
         folder.getChildren().forEach(item -> this.itemList.add(new ExplorerRowItem(item, false)));
         folder.getFilesInDir().forEach(item -> this.itemList.add(new ExplorerRowItem(item, false)));
+    }
+
+    private Folder fetchParentFolder() {
+        Folder folder = null;
+        try {
+            Socket socket = new Socket(device.getInetAddress(), device.getPortNo());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return folder;
     }
 
     public void treeMouseEvent(MouseEvent mouseEvent) {
