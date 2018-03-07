@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import com.jfoenix.controls.JFXDialog?>
+<?import com.jfoenix.controls.JFXDialogLayout?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXRadioButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import com.jfoenix.validation.RequiredFieldValidator?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<JFXDialog xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           prefHeight="400.0" prefWidth="600.0"
+           fx:id="root">
+    <JFXDialogLayout fx:id="dialogLayout">
+        <heading>
+            <Label fx:id="heading" styleClass="jfx-layout-heading">JFoenix Dialog</Label>
+        </heading>
+        <body>
+            <HBox spacing="100" alignment="BASELINE_CENTER">
+                <VBox spacing="20">
+                    <Label styleClass="radio-button-title-label" style="-fx-padding: 15px 0 5px 0">Origin</Label>
+
+                    <JFXRadioButton fx:id="optionOne" selected="true" text="This Device" styleClass="custom-jfx-radio-button">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="toggleGroupOne"/>
+                        </toggleGroup>
+                    </JFXRadioButton>
+                    <JFXRadioButton fx:id="optionTwo"
+                                    text="Radio 2" toggleGroup="$toggleGroupOne" styleClass="custom-jfx-radio-button"/>
+                    <HBox>
+                        <JFXButton fx:id="browseOne" styleClass="custom-jfx-button-raised-blue-small" text="Browse" buttonType="RAISED"/>
+                        <JFXTextField fx:id="optionOneTextField" id="optionOneTextField" promptText="Browse for folder">
+                            <validators>
+                                <RequiredFieldValidator message="Click the browse button">
+                                    <FontAwesomeIconView glyphName="WARNING" style="-fx-font-family: FontAwesome;"/>
+                                </RequiredFieldValidator>
+                            </validators>
+                        </JFXTextField>
+                    </HBox>
+                </VBox>
+                <VBox spacing="20">
+                    <Label styleClass="radio-button-title-label"  style="-fx-padding: 15px 0 5px 0">Destination</Label>
+
+                    <JFXRadioButton fx:id="optionThree" text="This Device" styleClass="custom-jfx-radio-button">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="toggleGroupTwo"/>
+                        </toggleGroup>
+                    </JFXRadioButton>
+                    <JFXRadioButton fx:id="optionFour" selected="true"
+                                    text="Radio 4" toggleGroup="$toggleGroupTwo" styleClass="custom-jfx-radio-button"/>
+                    <HBox>
+                        <JFXButton fx:id="browseTwo" styleClass="custom-jfx-button-raised-blue-small" text="Browse" buttonType="RAISED"/>
+                        <JFXTextField fx:id="optionTwoTextField" id="optionTwoTextField" promptText="Browse for folder">
+                            <validators>
+                                <RequiredFieldValidator message="Click the browse button">
+                                    <FontAwesomeIconView glyphName="WARNING" style="-fx-font-family: FontAwesome;"/>
+                                </RequiredFieldValidator>
+                            </validators>
+                        </JFXTextField>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </body>
+        <actions>
+            <JFXButton fx:id="cancelButton" styleClass="dialog-reject">CANCEL
+            </JFXButton>
+            <JFXButton fx:id="addButton" styleClass="dialog-accept">ADD
+            </JFXButton>
+        </actions>
+    </JFXDialogLayout>
+</JFXDialog>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import com.jfoenix.validation.RequiredFieldValidator?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.geometry.Insets?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<Tab xmlns="http://javafx.com/javafx"
+     xmlns:fx="http://javafx.com/fxml"
+     text="Settings"
+     fx:controller="controller.Settings">
+    <AnchorPane>
+        <GridPane>
+            <padding>
+                <Insets top="25" bottom="25" right="25" left="25"/>
+            </padding>
+
+            <Label styleClass="title-label" GridPane.columnIndex="0" GridPane.rowIndex="0">Machine Name:</Label>
+            <JFXTextField fx:id="machineName" promptText="Machine Name" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <validators>
+                    <RequiredFieldValidator message="Input Required!">
+                        <FontAwesomeIconView glyphName="WARNING" style="-fx-font-family: FontAwesome;"/>
+                    </RequiredFieldValidator>
+                </validators>
+            </JFXTextField>
+
+            <Label styleClass="title-label" GridPane.columnIndex="0" GridPane.rowIndex="1">Shared Folder:</Label>
+            <JFXTextField fx:id="sharedFolder" promptText="Machine Name" maxWidth="200" GridPane.columnIndex="1"
+                          GridPane.rowIndex="1">
+                <validators>
+                    <RequiredFieldValidator message="Input Required!">
+                        <FontAwesomeIconView glyphName="WARNING" style="-fx-font-family: FontAwesome;"/>
+                    </RequiredFieldValidator>
+                </validators>
+            </JFXTextField>
+            <JFXButton maxHeight="23" buttonType="RAISED" text="Browse" GridPane.columnIndex="2"
+                       GridPane.rowIndex="1"
+                       styleClass="custom-jfx-button-raised-blue-small" onMouseClicked="#browseForFolder"/>
+
+
+            <Label styleClass="title-label" GridPane.columnIndex="0" GridPane.rowIndex="2">Download Folder:</Label>
+            <JFXTextField fx:id="downloadFolderField" promptText="Download Folder" GridPane.columnIndex="1"
+                          GridPane.rowIndex="2">
+                <validators>
+                    <RequiredFieldValidator message="Input Required!">
+                        <FontAwesomeIconView glyphName="WARNING" style="-fx-font-family: FontAwesome;"/>
+                    </RequiredFieldValidator>
+                </validators>
+            </JFXTextField>
+            <JFXButton maxHeight="23" buttonType="RAISED" text="Browse" GridPane.columnIndex="2"
+                       GridPane.rowIndex="2"
+                       styleClass="custom-jfx-button-raised-blue-small" onMouseClicked="#browseForDLFolder"/>
+
+
+        </GridPane>
+        <JFXButton prefWidth="130" prefHeight="40" buttonType="RAISED" text="Save Settings"
+                   styleClass="custom-jfx-button-raised-green" AnchorPane.bottomAnchor="30.0"
+                   AnchorPane.rightAnchor="30.0" onMouseClicked="#setFakeSave"/>
+    </AnchorPane>
+</Tab>

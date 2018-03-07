@@ -126,7 +126,7 @@ public class FileFolderExplorer implements Initializable {
     }
 
     private Folder fetchParentFolder() {
-        Folder folder = null;
+        Folder folder = null; //TODO
         try {
             Socket socket = new Socket(device.getInetAddress(), device.getPortNo());
         } catch (IOException e) {

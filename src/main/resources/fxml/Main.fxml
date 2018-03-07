@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXTabPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ScrollPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controller.Main"
+           prefHeight="600.0" prefWidth="800.0"
+           fx:id="root">
+
+    <SplitPane orientation="VERTICAL" dividerPositions="0.85">
+        <items>
+            <JFXTabPane side="LEFT" fx:id="tabPane" onMouseClicked="#removeTab">
+                <tabs>
+                    <fx:include source="Devices.fxml"/>
+                    <fx:include source="Settings.fxml" fx:id="settingsTab"/>
+                </tabs>
+            </JFXTabPane>
+            <ScrollPane fx:id="scrollPane">
+                <VBox fx:id="scrollVbox">
+                </VBox>
+            </ScrollPane>
+        </items>
+    </SplitPane>
+
+</StackPane>

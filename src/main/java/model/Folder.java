@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-public class Folder implements FileFolder, Serializable {
+public class Folder implements model.FileFolder, Serializable {
     private static final long serialVersionUID = -9094017517798299741L;
 
     private List<IFile> filesInDir = null;

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import com.jfoenix.controls.JFXTextField?>
+<?import com.jfoenix.controls.JFXTreeTableView?>
+<?import com.jfoenix.controls.JFXTreeTableColumn?>
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            prefHeight="400.0" prefWidth="600.0"
+            fx:id="root">
+
+        <padding>
+            <Insets top="10" left="10" right="10" bottom="10"/>
+        </padding>
+        <HBox alignment="CENTER">
+            <Label styleClass="title-label">Files</Label>
+            <Label styleClass="title-label" fx:id="rowCount"/>
+            <StackPane HBox.hgrow="ALWAYS">
+                <StackPane StackPane.alignment="CENTER_RIGHT" maxWidth="200">
+                    <JFXTextField fx:id="searchField" promptText="Search..."/>
+                </StackPane>
+            </StackPane>
+        </HBox>
+        <JFXTreeTableView fx:id="treeTableView" styleClass="test-css"
+                          AnchorPane.bottomAnchor="5" AnchorPane.leftAnchor="5"
+                          AnchorPane.topAnchor="28" AnchorPane.rightAnchor="5"
+                          onMouseClicked="#treeMouseEvent">
+            <columns>
+                <JFXTreeTableColumn text="Item" fx:id="fileFolderColumn"/>
+                <JFXTreeTableColumn text="Size" fx:id="fileSizeColumn"/>
+                <JFXTreeTableColumn text="Date Modified" fx:id="dateModifiedColumn"/>
+            </columns>
+        </JFXTreeTableView>
+</AnchorPane>

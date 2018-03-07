@@ -1,1 +1,3 @@
+include 'main'
+
 rootProject.name = 'easy-sync'

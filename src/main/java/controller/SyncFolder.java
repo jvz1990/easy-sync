@@ -131,7 +131,7 @@ public class SyncFolder implements Initializable {
 
         Stage stage = new Stage();
         FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource("/resources/fxml/DeviceFileBrowser.fxml"));
+        fxmlLoader.setLocation(getClass().getResource("/fxml/DeviceFileBrowser.fxml"));
         FileFolderExplorer fileFolderExplorer = new FileFolderExplorer(folder, deviceTab.getDevice());
         fileFolderExplorer.createSyncButtons(field);
         fxmlLoader.setController(fileFolderExplorer);

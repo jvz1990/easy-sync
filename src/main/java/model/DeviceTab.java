@@ -116,7 +116,7 @@ public class DeviceTab extends Tab implements Serializable {
     private void showCreateSyncDialog(Message message) {
 
         FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource("/resources/fxml/Dialog.fxml"));
+        fxmlLoader.setLocation(getClass().getResource("/fxml/Dialog.fxml"));
         fxmlLoader.setController(new SyncFolder(this));
         try {
             JFXDialog jfxDialog = fxmlLoader.load();
@@ -164,7 +164,7 @@ public class DeviceTab extends Tab implements Serializable {
 
                 Stage stage = new Stage();
                 FXMLLoader fxmlLoader = new FXMLLoader();
-                fxmlLoader.setLocation(getClass().getResource("/resources/fxml/DeviceFileBrowser.fxml"));
+                fxmlLoader.setLocation(getClass().getResource("/fxml/DeviceFileBrowser.fxml"));
                 fxmlLoader.setController(new FileFolderExplorer(folder, device));
                 AnchorPane root = fxmlLoader.load();
                 JFXDecorator jfxDecorator = new JFXDecorator(stage, root);

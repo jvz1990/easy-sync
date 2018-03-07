@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import com.jfoenix.controls.JFXTreeTableView?>
+<?import com.jfoenix.controls.JFXTreeTableColumn?>
+<?import javafx.scene.layout.HBox?>
+<?import com.jfoenix.controls.JFXTextField?>
+<Tab xmlns="http://javafx.com/javafx"
+     xmlns:fx="http://javafx.com/fxml"
+     text="Devices"
+     fx:controller="controller.Devices">
+    <BorderPane>
+        <center>
+            <StackPane fx:id="centerStackPane">
+                <VBox>
+                    <HBox alignment="CENTER">
+                        <Label styleClass="title-label">Devices</Label>
+                        <Label styleClass="title-label" fx:id="rowCount"/>
+                        <StackPane HBox.hgrow="ALWAYS">
+                            <StackPane StackPane.alignment="CENTER_RIGHT" maxWidth="200">
+                                <JFXTextField fx:id="searchField" promptText="Search..."/>
+                            </StackPane>
+                        </StackPane>
+                    </HBox>
+                    <JFXTreeTableView fx:id="treeTableView" onKeyPressed="#treeListener" onMouseClicked="#treeMouseListener" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <JFXTreeTableColumn text="Online" fx:id="onlineColumn"/>
+                            <JFXTreeTableColumn text="Name" minWidth="300" fx:id="nameColumn"/>
+                            <JFXTreeTableColumn text="Trusted" minWidth="100" fx:id="trustedColumn"/>
+                            <JFXTreeTableColumn text="Blocked" minWidth="100" fx:id="blockedColumn"/>
+                        </columns>
+                    </JFXTreeTableView>
+                </VBox>
+            </StackPane>
+        </center>
+    </BorderPane>
+
+</Tab>
