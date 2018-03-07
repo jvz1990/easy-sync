@@ -18,67 +18,90 @@ public class Folder implements model.FileFolder, Serializable {
     private String folderName = null;
     private long folderID;
     private Folder parent = null;
+    private String absolutePath = null;
 
     // No save/transfer
-    private transient String absolutePath = null;
     private transient File root = null;
     private transient String relativePath = null;
 
     // for recursion/mining
-    public Folder(Folder parent, File root) {
+    public Folder(Folder parent, File root, boolean remember) {
         this.children = new LinkedList<>();
         this.filesInDir = new LinkedList<>();
 
         this.parent = parent;
         this.absolutePath = root.getAbsolutePath();
         this.folderName = root.getName();
-        this.folderID = DataState.fileIDcounter++;
 
         this.root = root;
 
         this.relativePath = parent.getRelativePath() + File.separator + this.folderName;
 
-        DataState.sharedFolderMap.put(this.folderID, this);
+        if(remember) {
+            this.folderID = DataState.fileIDcounter++;
+            DataState.sharedFolderMap.put(this.folderID, this);
+        } else {
+            this.folderID = -1;
+        }
+
+    }
+
+    // For system root dir
+    public Folder(File[] roots) {
+        this.children = new LinkedList<>();
+
+        for (File file : roots) {
+            Folder folder = new Folder(file, false);
+            folder.setFolderName(file.getAbsolutePath());
+            folder.setAbsolutePath(file.getAbsolutePath());
+            folder.setParent(this);
+            this.children.add(folder);
+        }
+
+        this.parent = null;
+        this.filesInDir = new LinkedList<>();
+
     }
 
     // for the absolute root
-    public Folder(File root) {
+    public Folder(File root, boolean remember) {
         this.children = new LinkedList<>();
         this.filesInDir = new LinkedList<>();
 
         this.parent = null;
         this.absolutePath = root.getAbsolutePath();
         this.folderName = root.getName();
-        this.folderID = DataState.fileIDcounter++;
 
         this.root = root;
         this.relativePath = this.folderName;
 
-        DataState.sharedFolderMap.put(this.folderID, this);
+        if(remember) {
+            this.folderID = DataState.fileIDcounter++;
+            DataState.sharedFolderMap.put(this.folderID, this);
+        } else {
+            this.folderID = -1;
+        }
     }
 
     public void mineRoot(File folder, boolean recurse) {
         if (folder.isDirectory()) {
             for (File entry : Objects.requireNonNull(folder.listFiles())) {
                 if (entry.isDirectory()) {
-                    Folder f = new Folder(this, entry);
-                    children.add(f);
+                    Folder f = new Folder(this, entry, true);
+                    this.children.add(f);
                     if (recurse) f.mineRoot(entry, recurse);
                 } else {
-                    filesInDir.add(new IFile(
+                    this.filesInDir.add(new IFile(
                             entry.length(),
                             entry.getName(),
                             entry.getAbsolutePath(),
                             entry.lastModified(),
-                            this
+                            this,
+                            true
                     ));
                 }
             }
         }
-    }
-
-    public String getAbsolutePath() {
-        return absolutePath;
     }
 
     public List<Folder> getChildren() {
@@ -93,19 +116,6 @@ public class Folder implements model.FileFolder, Serializable {
         return filesInDir;
     }
 
-    public void readContent() {
-        System.out.println("Folder: [" + folderName + "]");
-        System.out.println("Files: ");
-        for (IFile singleFile : getFilesInDir()) {
-            System.out.println(singleFile.getName());
-            System.out.println(singleFile.getParent().getRelativePath());
-        }
-
-        for (Folder folder : getChildren()) {
-            folder.readContent();
-        }
-    }
-
     public Folder getParent() {
         return parent;
     }
@@ -116,13 +126,10 @@ public class Folder implements model.FileFolder, Serializable {
 
     public static void main(String[] args) {
         //testA();
-        Folder folder = new Folder(new File("D:\\Dropbox\\School\\18\\01\\Algorithms and Analysis\\drive-download-20180213T032039Z-001"));
+        Folder folder = new Folder(new File("D:\\Dropbox\\School\\18\\01\\Algorithms and Analysis\\drive-download-20180213T032039Z-001"), true);
         folder.mineRoot(folder.getRoot(), true);
 
-        folder.readContent();
-        for (Folder child : folder.getChildren()) {
-            child.readContent();
-        }
+        System.out.println(folder);
 
         try {
             System.out.println(General.toByteArray(folder).length);
@@ -130,6 +137,31 @@ public class Folder implements model.FileFolder, Serializable {
             e.printStackTrace();
         }
 
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    public void setParent(Folder parent) {
+        this.parent = parent;
+    }
+
+    public void setFolderID(long folderID) {
+        this.folderID = folderID;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    public void setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
+    }
+
+    @Override
+    public String getAbsolutePath() {
+        return absolutePath;
     }
 
     @Override
@@ -147,4 +179,21 @@ public class Folder implements model.FileFolder, Serializable {
         return folderID;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Folder: [").append(folderName).append("]");
+
+        for (IFile iFile : filesInDir) {
+            stringBuilder.append("\n File: [").append(iFile.getAbsolutePath()).append(iFile.getName()).append("]");
+        }
+
+        for (Folder child : children) {
+            stringBuilder.append('\n').append(child.toString());
+        }
+
+        return stringBuilder.toString();
+
+    }
 }

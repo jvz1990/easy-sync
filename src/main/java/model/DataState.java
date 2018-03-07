@@ -42,11 +42,12 @@ public class DataState implements Serializable {
     //-------------------------No Saves---------------------------------------
     private transient Stage primaryStage;
     public static transient final ArrayList<Stage> stages = new ArrayList<>();
-    public static transient long fileIDcounter = Long.MIN_VALUE;
+    public static transient long fileIDcounter = 0;
     public static transient final HashMap<Long, FileFolder> sharedFolderMap = new HashMap<>();
     public static transient final HashMap<String, ImageView> createdIcons = new HashMap<>();
     public static transient Folder rootFolder = null;
     public static transient Folder userFolder = null;
+    public static transient Folder sysRootFolder = null;
     public static transient double screenWidth, screenHeight;
     //------------------------------------------------------------------------
 

@@ -16,10 +16,12 @@ import util.BackgroundTask;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main extends Application {
 
     private static final ArrayList<Stopable> stopables = new ArrayList<>();
+    private static final AtomicBoolean quiting = new AtomicBoolean(false);
 
     public static void main(String[] args) {
         loadState();
@@ -27,7 +29,7 @@ public class Main extends Application {
     }
 
     private static void loadState() {
-        File file = new File("easy-sync-settings.bin");
+        File file = new File("settings.bin");
         new DataState();
         if (file.exists()) {
             ObjectInputStream objectInputStream = null;
@@ -38,7 +40,8 @@ public class Main extends Application {
                 e.printStackTrace();
                 if (objectInputStream != null) try {
                     objectInputStream.close();
-                } catch (IOException ignore) {
+                } catch (IOException exception) {
+                    exception.printStackTrace();
                 }
                 //noinspection ResultOfMethodCallIgnored
                 file.delete();
@@ -54,7 +57,7 @@ public class Main extends Application {
 
         JFXDecorator jfxDecorator = new JFXDecorator(primaryStage, root);
         jfxDecorator.setCustomMaximize(true);
-        jfxDecorator.setText("Easy File Sync");
+        jfxDecorator.setTitle("Easy File Sync");
         jfxDecorator.setGraphic(new SVGGlyph(""));
 
         Scene scene = new Scene(jfxDecorator, DataState.screenWidth * 0.66, DataState.screenHeight * 0.66);
@@ -73,7 +76,7 @@ public class Main extends Application {
 
         new Thread(() -> {
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -112,6 +115,8 @@ public class Main extends Application {
     }
 
     private void closeProgram() {
+        if(quiting.get()) return; //Sometimes called twice within javaFX
+        quiting.set(true);
         Thread closer = new Thread(() -> {
             try {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("settings.bin"));

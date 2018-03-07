@@ -9,7 +9,7 @@ public class Message implements Serializable {
     public enum Commands {
         UPLOAD, DOWNLOAD, DOWNLOAD_REQUEST, PERMISSION,
         SEMI, FULL, READY, GET_SHARED_FOLDER, ERROR, DONE,
-        BROWSE_ROOT, GET_ABSOLUTE_PATH
+        BROWSE_ROOT, GET_ABSOLUTE_PATH, GET_UNSSAVED_FOLDER
     }
 
     public Message() {

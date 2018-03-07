@@ -11,6 +11,7 @@ import util.General;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -85,6 +86,9 @@ public class SocketProcessor extends Thread implements Stopable {
                             uploadFolderInfo(message);
                             break;
                         case BROWSE_ROOT:
+                            uploadFolderInfo(message);
+                            break;
+                        case GET_UNSSAVED_FOLDER:
                             uploadFolderInfo(message);
                             break;
                         case GET_ABSOLUTE_PATH:
@@ -217,12 +221,38 @@ public class SocketProcessor extends Thread implements Stopable {
                     if (DataState.rootFolder == null) BackgroundTask.mineSharedFolder();
                     return DataState.rootFolder;
                 case BROWSE_ROOT:
-                    if (DataState.userFolder == null) BackgroundTask.mineUserFolder();
-                    return DataState.userFolder;
+                    InetAddress address = message.socket.getInetAddress();
+                    Device device = DataState.deviceList.parallelStream().filter(item -> item.getInetAddress().equals(address)).findAny().orElse(null);
+                    if (device == null) return null;
+                    else if (device.isFullAccess()) return DataState.sysRootFolder;
+                    else if (device.isTrusted()) return DataState.rootFolder;
+                    else return DataState.userFolder;
+                case GET_UNSSAVED_FOLDER: // TODO working spot
+                    File file = new File(message.string[0]);
+                    if(!file.isDirectory()) return null;
+                    Folder folder = new Folder(file, false);
+                    folder.setParent(null);
+                    folder.setFolderID(-1);
+
+                    for (File entry : Objects.requireNonNull(file.listFiles())) {
+                        if(entry.isDirectory()) {
+                            folder.getChildren().add(new Folder(folder, entry, false));
+                        } else {
+                            folder.getFilesInDir().add(new IFile(
+                                    entry.length(),
+                                    entry.getName(),
+                                    entry.getAbsolutePath(),
+                                    entry.lastModified(),
+                                    folder,
+                                    false
+                            ));
+                        }
+                    }
+
+                    return folder;
             }
             return null;
         }
-
 
         private void uploadFolderInfo(Message message) {
             Folder folder = getFolderFromMessage(message);
@@ -307,6 +337,13 @@ public class SocketProcessor extends Thread implements Stopable {
         }
 
         private void uploadFileFolder(final Message message) {
+
+            if(message.aLong == -1) {
+
+            } else {
+
+            }
+
             FileFolder fileFolder = DataState.sharedFolderMap.get(message.aLong);
             IFile iFile = null;
             Folder folder = null;

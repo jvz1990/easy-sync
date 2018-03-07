@@ -13,18 +13,18 @@ public class IFile implements FileFolder, Serializable {
 
     private transient Folder parent;
 
-    public IFile(long fileSize, String fileName, String absolutePath, long dateModified, Folder parent) {
+    public IFile(long fileSize, String fileName, String absolutePath, long dateModified, Folder parent, boolean remember) {
         this.fileSize = fileSize;
         this.fileName = fileName;
         this.absolutePath = absolutePath;
         this.dateModified = dateModified;
-        this.fileID = DataState.fileIDcounter++;
         this.parent = parent;
-        DataState.sharedFolderMap.put(this.fileID, this);
-    }
-
-    public String getAbsolutePath() {
-        return absolutePath;
+        if(remember) {
+            this.fileID = DataState.fileIDcounter++;
+            DataState.sharedFolderMap.put(this.fileID, this);
+        } else {
+            this.fileID = -1;
+        }
     }
 
     public long getDateModified() {
@@ -37,6 +37,11 @@ public class IFile implements FileFolder, Serializable {
 
     public Folder getParent() {
         return parent;
+    }
+
+    @Override
+    public String getAbsolutePath() {
+        return absolutePath;
     }
 
     @Override

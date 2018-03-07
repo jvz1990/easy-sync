@@ -121,6 +121,7 @@ public class SyncFolder implements Initializable {
 
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             folder = (Folder) objectInputStream.readObject();
+
             objectInputStream.close();
             objectOutputStream.close();
             socket.close();
@@ -140,6 +141,7 @@ public class SyncFolder implements Initializable {
             root = fxmlLoader.load();
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         JFXDecorator jfxDecorator = new JFXDecorator(stage, root);
         jfxDecorator.setCustomMaximize(true);

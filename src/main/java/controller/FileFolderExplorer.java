@@ -21,11 +21,13 @@ import networking.TCP.SocketProcessor;
 import util.General;
 import util.Icons;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
@@ -61,7 +63,12 @@ public class FileFolderExplorer implements Initializable {
 
         this.copyMenuItem.setOnAction(event -> {
             Message message = new Message(Message.Commands.DOWNLOAD_REQUEST);
-            message.aLong = treeTableView.getSelectionModel().getSelectedItem().getValue().getCurrentFile().getID();
+            FileFolder fileFolder = treeTableView.getSelectionModel().getSelectedItem().getValue().getCurrentFile();
+            message.aLong = fileFolder.getID();
+            if(message.aLong == -1) {
+                message.string = new String[1];
+                message.string[0] = fileFolder.getAbsolutePath();
+            }
             message.device = device;
             SocketProcessor.HOLDER.addMessage(message);
         });
@@ -112,27 +119,49 @@ public class FileFolderExplorer implements Initializable {
     }
 
     private void addFromFolder(Folder folder) {
+        System.out.println("Called from addFromFolder");
         this.itemList.clear();
-        if (folder.getParent() != null) { // TODO
+        if (folder.getParent() != null) {
             this.itemList.add(new ExplorerRowItem(folder.getParent(), true));
-        } else {
-            Folder requestedFolder = fetchParentFolder();
-            if (requestedFolder != null) {
-                this.itemList.add(new ExplorerRowItem(requestedFolder, true));
+        }
+
+        if(folder.getID() == -1) {
+            Folder downloaded = getFolderContent(folder); // TODO working point?
+            if (downloaded != null) {
+                downloaded.setParent(folder);
+                folder.getChildren().addAll(downloaded.getChildren());
+                folder.getFilesInDir().addAll(downloaded.getFilesInDir());
+                folder.setFolderID(-2);
             }
         }
+
         folder.getChildren().forEach(item -> this.itemList.add(new ExplorerRowItem(item, false)));
         folder.getFilesInDir().forEach(item -> this.itemList.add(new ExplorerRowItem(item, false)));
     }
 
-    private Folder fetchParentFolder() {
-        Folder folder = null; //TODO
+    private Folder getFolderContent(Folder folder) {
         try {
             Socket socket = new Socket(device.getInetAddress(), device.getPortNo());
-        } catch (IOException e) {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
+            Message message = new Message(Message.Commands.GET_UNSSAVED_FOLDER);
+            message.string = new String[1];
+
+            message.string[0] = folder.getAbsolutePath();
+
+            objectOutputStream.writeObject(message);
+
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+            Folder newFolder = (Folder) objectInputStream.readObject();
+
+            objectOutputStream.flush();
+            objectOutputStream.close();
+            socket.close();
+            return newFolder;
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return folder;
+        return null;
     }
 
     public void treeMouseEvent(MouseEvent mouseEvent) {
@@ -248,7 +277,7 @@ public class FileFolderExplorer implements Initializable {
             imageView = new ImageView(imageView.getImage());
 
             this.fxIcon = imageView;
-            this.label.setText(item);
+            this.label.setText(" " + item);
 
             HBox hBox = new HBox();
             if (this.fxIcon == null) {
