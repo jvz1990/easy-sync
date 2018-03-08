@@ -71,8 +71,6 @@ public class SocketProcessor extends Thread implements Stopable {
                     Message message = messages.take();
                     if (message.command == null) continue;
                     switch (message.command) {
-                        case READY:
-                            break;
                         case DOWNLOAD_REQUEST:
                             new Thread(() -> processDownloadRequest(message)).start();
                             break;
@@ -88,11 +86,8 @@ public class SocketProcessor extends Thread implements Stopable {
                         case BROWSE_ROOT:
                             uploadFolderInfo(message);
                             break;
-                        case GET_UNSSAVED_FOLDER:
+                        case GET_UNSAVED_FOLDER:
                             uploadFolderInfo(message);
-                            break;
-                        case GET_ABSOLUTE_PATH:
-                            sendAbsolutePath(message);
                             break;
                     }
 
@@ -100,23 +95,6 @@ public class SocketProcessor extends Thread implements Stopable {
                 }
             }
             System.out.println("Quitting Message Processor");
-        }
-
-        private void sendAbsolutePath(Message message) {
-            Folder folder = (Folder) DataState.sharedFolderMap.get(message.aLong);
-            message.string = new String[1];
-            message.string[0] = folder.getAbsolutePath();
-            Socket socket = message.socket;
-            try {
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                objectOutputStream.writeObject(message);
-                objectOutputStream.flush();
-                objectOutputStream.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         }
 
         private void processPermissionRequest(Message message) {
@@ -131,7 +109,11 @@ public class SocketProcessor extends Thread implements Stopable {
             Message reply = new Message();
 
             InetAddress address = socket.getInetAddress();
-            Device device = DataState.deviceList.parallelStream().filter(item -> item.getInetAddress().equals(address)).findAny().orElse(null);
+            Device device = DataState.deviceList
+                    .stream()
+                    .filter(item -> item.getInetAddress().equals(address))
+                    .findFirst()
+                    .orElse(null);
             if (device == null) reply.command = Message.Commands.ERROR;
             else if (device.isFullAccess()) reply.command = Message.Commands.FULL;
             else if (device.isTrusted()) reply.command = Message.Commands.SEMI;
@@ -222,32 +204,22 @@ public class SocketProcessor extends Thread implements Stopable {
                     return DataState.rootFolder;
                 case BROWSE_ROOT:
                     InetAddress address = message.socket.getInetAddress();
-                    Device device = DataState.deviceList.parallelStream().filter(item -> item.getInetAddress().equals(address)).findAny().orElse(null);
+                    Device device = DataState.deviceList
+                            .stream()
+                            .filter(item -> item.getInetAddress().equals(address))
+                            .findFirst()
+                            .orElse(null);
                     if (device == null) return null;
                     else if (device.isFullAccess()) return DataState.sysRootFolder;
                     else if (device.isTrusted()) return DataState.rootFolder;
                     else return DataState.userFolder;
-                case GET_UNSSAVED_FOLDER: // TODO working spot
+                case GET_UNSAVED_FOLDER: // TODO working spot
+                    System.out.println("Should contain filePath:\n" + message.string[0]);
                     File file = new File(message.string[0]);
                     if(!file.isDirectory()) return null;
-                    Folder folder = new Folder(file, false);
-                    folder.setParent(null);
-                    folder.setFolderID(-1);
+                    Folder folder = new Folder(file);
 
-                    for (File entry : Objects.requireNonNull(file.listFiles())) {
-                        if(entry.isDirectory()) {
-                            folder.getChildren().add(new Folder(folder, entry, false));
-                        } else {
-                            folder.getFilesInDir().add(new IFile(
-                                    entry.length(),
-                                    entry.getName(),
-                                    entry.getAbsolutePath(),
-                                    entry.lastModified(),
-                                    folder,
-                                    false
-                            ));
-                        }
-                    }
+                    folder.mineRoot(file, false);
 
                     return folder;
             }
@@ -337,25 +309,25 @@ public class SocketProcessor extends Thread implements Stopable {
         }
 
         private void uploadFileFolder(final Message message) {
+            FileFolder fileFolder = DataState.sharedFolderSet
+                    .stream()
+                    .filter(entry -> entry.getAbsolutePath().equals(message.string[0]))
+                    .findFirst()
+                    .orElse(null);
 
-            if(message.aLong == -1) {
-
-            } else {
-
-            }
-
-            FileFolder fileFolder = DataState.sharedFolderMap.get(message.aLong);
             IFile iFile = null;
             Folder folder = null;
 
-            if (fileFolder.isFile()) {
-                iFile = (IFile) fileFolder;
-                uploadFile(iFile, message);
-            } else {
-                folder = (Folder) fileFolder;
-
-                uploadFolderInfo(folder, message);
+            if(fileFolder != null) {
+                if (fileFolder.isFile()) {
+                    iFile = (IFile) fileFolder;
+                    uploadFile(iFile, message);
+                } else {
+                    folder = (Folder) fileFolder;
+                    uploadFolderInfo(folder, message);
+                }
             }
+
 
             try {
                 message.command = Message.Commands.DONE;

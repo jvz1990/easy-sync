@@ -21,13 +21,11 @@ import networking.TCP.SocketProcessor;
 import util.General;
 import util.Icons;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
@@ -46,12 +44,10 @@ public class FileFolderExplorer implements Initializable {
     public ContextMenu contextMenu;
     public MenuItem copyMenuItem;
 
-    private Folder rootFolder;
-
     private Device device;
+    private boolean networked = false;
 
     public FileFolderExplorer(Folder folder, Device device) {
-        this.rootFolder = folder;
         this.itemList = FXCollections.observableArrayList();
         this.tableRoot = new RecursiveTreeItem<>(itemList, RecursiveTreeObject::getChildren);
         this.device = device;
@@ -64,11 +60,8 @@ public class FileFolderExplorer implements Initializable {
         this.copyMenuItem.setOnAction(event -> {
             Message message = new Message(Message.Commands.DOWNLOAD_REQUEST);
             FileFolder fileFolder = treeTableView.getSelectionModel().getSelectedItem().getValue().getCurrentFile();
-            message.aLong = fileFolder.getID();
-            if(message.aLong == -1) {
-                message.string = new String[1];
-                message.string[0] = fileFolder.getAbsolutePath();
-            }
+            message.string = new String[1];
+            message.string[0] = fileFolder.getAbsolutePath();
             message.device = device;
             SocketProcessor.HOLDER.addMessage(message);
         });
@@ -76,11 +69,14 @@ public class FileFolderExplorer implements Initializable {
     }
 
     public void createSyncButtons(JFXTextField field) {
+        this.networked = true;
         JFXButton add = new JFXButton("Add Folder");
         add.getStyleClass().add("custom-jfx-button-raised-blue-small");
 
         add.setOnMouseClicked(event -> {
-            if (treeTableView.getSelectionModel().getSelectedItem().getValue().getCurrentFile().isFile()) {
+            if(treeTableView.getSelectionModel().isEmpty()) return;
+            FileFolder fileFolder = treeTableView.getSelectionModel().getSelectedItem().getValue().getCurrentFile();
+            if (fileFolder.isFile()) {
                 Main.Holder.snackbar.fireEvent(
                         new JFXSnackbar.SnackbarEvent(
                                 "Please select folder!",
@@ -92,27 +88,7 @@ public class FileFolderExplorer implements Initializable {
                 );
                 return;
             }
-
-            try {
-                Socket socket = new Socket(device.getInetAddress(), device.getPortNo());
-                Message message = new Message(Message.Commands.GET_ABSOLUTE_PATH);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                objectOutputStream.writeObject(message);
-                objectOutputStream.flush();
-
-                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                message = (Message) objectInputStream.readObject();
-
-                objectInputStream.close();
-                objectOutputStream.close();
-                socket.close();
-
-                final String text = message.string[0];
-                Platform.runLater(() -> field.setText(text));
-
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            Platform.runLater(() -> field.setText(fileFolder.getAbsolutePath()));
         });
 
         Platform.runLater(() -> root.getChildren().add(add));
@@ -125,14 +101,16 @@ public class FileFolderExplorer implements Initializable {
             this.itemList.add(new ExplorerRowItem(folder.getParent(), true));
         }
 
-        if(folder.getID() == -1) {
-            Folder downloaded = getFolderContent(folder); // TODO working point?
-            if (downloaded != null) {
-                downloaded.setParent(folder);
-                folder.getChildren().addAll(downloaded.getChildren());
-                folder.getFilesInDir().addAll(downloaded.getFilesInDir());
-                folder.setFolderID(-2);
+        if(networked) {
+            if(folder.getChildren().size() < 1 && folder.getFilesInDir().size() < 1) {
+                Folder downloaded = getFolderContent(folder); // TODO working point?
+                if (downloaded != null) {
+                    downloaded.setParent(folder);
+                    folder.getChildren().addAll(downloaded.getChildren());
+                    folder.getFilesInDir().addAll(downloaded.getFilesInDir());
+                }
             }
+
         }
 
         folder.getChildren().forEach(item -> this.itemList.add(new ExplorerRowItem(item, false)));
@@ -144,7 +122,7 @@ public class FileFolderExplorer implements Initializable {
             Socket socket = new Socket(device.getInetAddress(), device.getPortNo());
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 
-            Message message = new Message(Message.Commands.GET_UNSSAVED_FOLDER);
+            Message message = new Message(Message.Commands.GET_UNSAVED_FOLDER);
             message.string = new String[1];
 
             message.string[0] = folder.getAbsolutePath();
@@ -270,13 +248,18 @@ public class FileFolderExplorer implements Initializable {
                 extension = General.getExtension(item);
             }
 
-            ImageView imageView = DataState.createdIcons.get(extension);
-            if (imageView == null) {
-                imageView = Icons.addIcon(extension);
-            }
-            imageView = new ImageView(imageView.getImage());
+            ImageViewIcon imageViewIcon = DataState.createdIcons
+                    .stream()
+                    .filter(entry -> entry.getExtension().equals(extension))
+                    .findFirst().orElse(null);
 
-            this.fxIcon = imageView;
+            if (imageViewIcon == null) {
+                imageViewIcon = Icons.addIcon(extension);
+            }
+
+            if (imageViewIcon != null) {
+                this.fxIcon = new ImageView(imageViewIcon.getImage());
+            }
             this.label.setText(" " + item);
 
             HBox hBox = new HBox();

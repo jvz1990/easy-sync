@@ -5,7 +5,6 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.image.ImageView;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import util.General;
@@ -16,7 +15,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -42,9 +41,8 @@ public class DataState implements Serializable {
     //-------------------------No Saves---------------------------------------
     private transient Stage primaryStage;
     public static transient final ArrayList<Stage> stages = new ArrayList<>();
-    public static transient long fileIDcounter = 0;
-    public static transient final HashMap<Long, FileFolder> sharedFolderMap = new HashMap<>();
-    public static transient final HashMap<String, ImageView> createdIcons = new HashMap<>();
+    public static transient final HashSet<FileFolder> sharedFolderSet = new HashSet<>();
+    public static transient final HashSet<ImageViewIcon> createdIcons = new HashSet<>();
     public static transient Folder rootFolder = null;
     public static transient Folder userFolder = null;
     public static transient Folder sysRootFolder = null;
@@ -96,10 +94,6 @@ public class DataState implements Serializable {
         return machineName.get();
     }
 
-    public static StringProperty machineNameProperty() {
-        return machineName;
-    }
-
     public static void setMachineName(String machineName) {
         DataState.machineName.set(machineName);
     }
@@ -110,10 +104,6 @@ public class DataState implements Serializable {
 
     public static String getDownloadFolder() {
         return downloadFolder.getValue();
-    }
-
-    public static StringProperty downloadFolderProperty() {
-        return downloadFolder;
     }
 
     public static void setDownloadFolder(String downloadFolder) {

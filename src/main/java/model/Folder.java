@@ -1,22 +1,18 @@
 package model;
 
-import util.General;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Folder implements model.FileFolder, Serializable {
+public class Folder implements FileFolder, Serializable {
     private static final long serialVersionUID = -9094017517798299741L;
 
     private List<IFile> filesInDir = null;
     private List<Folder> children = null;
 
     private String folderName = null;
-    private long folderID;
     private Folder parent = null;
     private String absolutePath = null;
 
@@ -25,9 +21,10 @@ public class Folder implements model.FileFolder, Serializable {
     private transient String relativePath = null;
 
     // for recursion/mining
-    public Folder(Folder parent, File root, boolean remember) {
-        this.children = new LinkedList<>();
-        this.filesInDir = new LinkedList<>();
+    public Folder(Folder parent, File root) {
+
+        this.children = new ArrayList<>(getNoFoldersInFolder(root));
+        this.filesInDir = new ArrayList<>(getNoFilesInFolder(root));
 
         this.parent = parent;
         this.absolutePath = root.getAbsolutePath();
@@ -37,36 +34,19 @@ public class Folder implements model.FileFolder, Serializable {
 
         this.relativePath = parent.getRelativePath() + File.separator + this.folderName;
 
-        if(remember) {
-            this.folderID = DataState.fileIDcounter++;
-            DataState.sharedFolderMap.put(this.folderID, this);
-        } else {
-            this.folderID = -1;
-        }
-
+        DataState.sharedFolderSet.add(this);
     }
 
-    // For system root dir
-    public Folder(File[] roots) {
-        this.children = new LinkedList<>();
-
-        for (File file : roots) {
-            Folder folder = new Folder(file, false);
-            folder.setFolderName(file.getAbsolutePath());
-            folder.setAbsolutePath(file.getAbsolutePath());
-            folder.setParent(this);
-            this.children.add(folder);
-        }
-
-        this.parent = null;
-        this.filesInDir = new LinkedList<>();
-
+    // For system roots dir
+    public Folder() {
+        this.children = new ArrayList<>(1);
+        this.filesInDir = new ArrayList<>(0);
     }
 
     // for the absolute root
-    public Folder(File root, boolean remember) {
-        this.children = new LinkedList<>();
-        this.filesInDir = new LinkedList<>();
+    public Folder(File root) {
+        this.children = new ArrayList<>(getNoFoldersInFolder(root));
+        this.filesInDir = new ArrayList<>(getNoFilesInFolder(root));
 
         this.parent = null;
         this.absolutePath = root.getAbsolutePath();
@@ -75,11 +55,14 @@ public class Folder implements model.FileFolder, Serializable {
         this.root = root;
         this.relativePath = this.folderName;
 
-        if(remember) {
-            this.folderID = DataState.fileIDcounter++;
-            DataState.sharedFolderMap.put(this.folderID, this);
-        } else {
-            this.folderID = -1;
+        DataState.sharedFolderSet.add(this);
+    }
+
+    public void addSystemRoots(File[] roots) {
+        for (File file : roots) {
+            Folder folder = new Folder(file);
+            folder.setFolderName(file.getAbsolutePath());
+            this.children.add(folder);
         }
     }
 
@@ -87,21 +70,47 @@ public class Folder implements model.FileFolder, Serializable {
         if (folder.isDirectory()) {
             for (File entry : Objects.requireNonNull(folder.listFiles())) {
                 if (entry.isDirectory()) {
-                    Folder f = new Folder(this, entry, true);
+                    Folder f = new Folder(this, entry);
                     this.children.add(f);
                     if (recurse) f.mineRoot(entry, recurse);
                 } else {
-                    this.filesInDir.add(new IFile(
+                    this.filesInDir.add(
+                            new IFile(
                             entry.length(),
                             entry.getName(),
                             entry.getAbsolutePath(),
                             entry.lastModified(),
-                            this,
-                            true
+                            this
                     ));
                 }
             }
         }
+    }
+
+    private int getNoFoldersInFolder(File folder) {
+        if(!folder.isDirectory()) return 0;
+
+        int count = 0;
+        try {
+            for (File file : Objects.requireNonNull(folder.listFiles())) {
+                if(file.isDirectory()) count++;
+            }
+        } catch (Exception ignored) {}
+
+        return count;
+    }
+
+    private int getNoFilesInFolder(File folder) {
+        if(!folder.isDirectory()) return 0;
+
+        int count = 0;
+        try{
+            for (File file : Objects.requireNonNull(folder.listFiles())) {
+                if (file.isFile()) count++;
+            }
+        } catch (Exception ignored) {}
+
+        return count;
     }
 
     public List<Folder> getChildren() {
@@ -124,39 +133,12 @@ public class Folder implements model.FileFolder, Serializable {
         return relativePath;
     }
 
-    public static void main(String[] args) {
-        //testA();
-        Folder folder = new Folder(new File("D:\\Dropbox\\School\\18\\01\\Algorithms and Analysis\\drive-download-20180213T032039Z-001"), true);
-        folder.mineRoot(folder.getRoot(), true);
-
-        System.out.println(folder);
-
-        try {
-            System.out.println(General.toByteArray(folder).length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public void setFolderName(String folderName) {
         this.folderName = folderName;
     }
 
     public void setParent(Folder parent) {
         this.parent = parent;
-    }
-
-    public void setFolderID(long folderID) {
-        this.folderID = folderID;
-    }
-
-    public void setRelativePath(String relativePath) {
-        this.relativePath = relativePath;
-    }
-
-    public void setAbsolutePath(String absolutePath) {
-        this.absolutePath = absolutePath;
     }
 
     @Override
@@ -175,11 +157,6 @@ public class Folder implements model.FileFolder, Serializable {
     }
 
     @Override
-    public long getID() {
-        return folderID;
-    }
-
-    @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -195,5 +172,10 @@ public class Folder implements model.FileFolder, Serializable {
 
         return stringBuilder.toString();
 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return ((Folder) obj).getAbsolutePath().equals(this.absolutePath);
     }
 }

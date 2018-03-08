@@ -6,25 +6,19 @@ public class IFile implements FileFolder, Serializable {
     private static final long serialVersionUID = -7723410987381496076L;
 
     private long fileSize;
-    private long fileID;
     private String fileName = null;
     private String absolutePath = null;
     private long dateModified;
 
     private transient Folder parent;
 
-    public IFile(long fileSize, String fileName, String absolutePath, long dateModified, Folder parent, boolean remember) {
+    public IFile(long fileSize, String fileName, String absolutePath, long dateModified, Folder parent) {
         this.fileSize = fileSize;
         this.fileName = fileName;
         this.absolutePath = absolutePath;
         this.dateModified = dateModified;
         this.parent = parent;
-        if(remember) {
-            this.fileID = DataState.fileIDcounter++;
-            DataState.sharedFolderMap.put(this.fileID, this);
-        } else {
-            this.fileID = -1;
-        }
+        DataState.sharedFolderSet.add(this);
     }
 
     public long getDateModified() {
@@ -37,6 +31,11 @@ public class IFile implements FileFolder, Serializable {
 
     public Folder getParent() {
         return parent;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return ((IFile) obj).getAbsolutePath().equals(this.absolutePath);
     }
 
     @Override
@@ -54,8 +53,4 @@ public class IFile implements FileFolder, Serializable {
         return fileName;
     }
 
-    @Override
-    public long getID() {
-        return fileID;
-    }
 }

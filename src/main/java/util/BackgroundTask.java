@@ -18,8 +18,8 @@ public class BackgroundTask extends Thread {
         File file = new File(DataState.sharedFolder.getValue());
         if(!file.exists()) return;
 
-        DataState.sharedFolderMap.clear();
-        Folder folder = new Folder(file, true);
+        DataState.sharedFolderSet.clear();
+        Folder folder = new Folder(file);
         folder.mineRoot(folder.getRoot(), true);
         DataState.rootFolder = folder;
     }
@@ -27,13 +27,14 @@ public class BackgroundTask extends Thread {
     public static void mineUserFolder() {
         if(DataState.userFolder != null) return;
         File file = new File(System.getProperty("user.dir"));
-        Folder folder = new Folder(file, true);
+        Folder folder = new Folder(file);
         folder.mineRoot(file, false);
         DataState.userFolder = folder;
     }
 
     public static void createSysRootFolder() {
-        DataState.sysRootFolder = new Folder(File.listRoots());
+        DataState.sysRootFolder = new Folder();
+        DataState.sysRootFolder.addSystemRoots(File.listRoots());
     }
 
     @Override
