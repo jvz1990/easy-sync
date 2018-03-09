@@ -24,8 +24,6 @@ public class Broadcaster extends Thread implements Stopable {
     @Override
     public void run() {
 
-        System.out.println("started");
-
         DatagramSocket datagramSocket;
         try {
             datagramSocket = new DatagramSocket();

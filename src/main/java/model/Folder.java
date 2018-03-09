@@ -14,7 +14,7 @@ public class Folder implements FileFolder, Serializable {
 
     private String folderName = null;
     private Folder parent = null;
-    private String absolutePath = null;
+    private String absolutePath = "";
 
     // No save/transfer
     private transient File root = null;
@@ -177,5 +177,10 @@ public class Folder implements FileFolder, Serializable {
     @Override
     public boolean equals(Object obj) {
         return ((Folder) obj).getAbsolutePath().equals(this.absolutePath);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.absolutePath.hashCode();
     }
 }

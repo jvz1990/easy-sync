@@ -15,6 +15,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import model.*;
 import networking.TCP.Message;
 import networking.TCP.SocketProcessor;
@@ -46,6 +47,7 @@ public class FileFolderExplorer implements Initializable {
 
     private Device device;
     private boolean networked = false;
+    private Stage stage;
 
     public FileFolderExplorer(Folder folder, Device device) {
         this.itemList = FXCollections.observableArrayList();
@@ -71,7 +73,9 @@ public class FileFolderExplorer implements Initializable {
     public void createSyncButtons(JFXTextField field) {
         this.networked = true;
         JFXButton add = new JFXButton("Add Folder");
-        add.getStyleClass().add("custom-jfx-button-raised-blue-small");
+        add.getStyleClass().add("custom-jfx-button-raised-blue-medium");
+        AnchorPane.setBottomAnchor(add, 2.0);
+        AnchorPane.setRightAnchor(add, 2.0);
 
         add.setOnMouseClicked(event -> {
             if(treeTableView.getSelectionModel().isEmpty()) return;
@@ -88,14 +92,16 @@ public class FileFolderExplorer implements Initializable {
                 );
                 return;
             }
-            Platform.runLater(() -> field.setText(fileFolder.getAbsolutePath()));
+            Platform.runLater(() -> {
+                field.setText(fileFolder.getAbsolutePath());
+                stage.close();
+            });
         });
 
         Platform.runLater(() -> root.getChildren().add(add));
     }
 
     private void addFromFolder(Folder folder) {
-        System.out.println("Called from addFromFolder");
         this.itemList.clear();
         if (folder.getParent() != null) {
             this.itemList.add(new ExplorerRowItem(folder.getParent(), true));
@@ -103,7 +109,7 @@ public class FileFolderExplorer implements Initializable {
 
         if(networked) {
             if(folder.getChildren().size() < 1 && folder.getFilesInDir().size() < 1) {
-                Folder downloaded = getFolderContent(folder); // TODO working point?
+                Folder downloaded = getFolderContent(folder);
                 if (downloaded != null) {
                     downloaded.setParent(folder);
                     folder.getChildren().addAll(downloaded.getChildren());
@@ -271,6 +277,10 @@ public class FileFolderExplorer implements Initializable {
             }
             this.setGraphic(hBox);
         }
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }
 

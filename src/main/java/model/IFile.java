@@ -7,7 +7,7 @@ public class IFile implements FileFolder, Serializable {
 
     private long fileSize;
     private String fileName = null;
-    private String absolutePath = null;
+    private String absolutePath = "";
     private long dateModified;
 
     private transient Folder parent;
@@ -53,4 +53,8 @@ public class IFile implements FileFolder, Serializable {
         return fileName;
     }
 
+    @Override
+    public int hashCode() {
+        return this.absolutePath.hashCode();
+    }
 }

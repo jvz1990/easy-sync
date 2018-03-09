@@ -17,6 +17,12 @@ public class ImageViewIcon extends ImageView{
 
     @Override
     public boolean equals(Object obj) {
-        return ((ImageViewIcon) obj).getExtension().equals(this.extension);
+        if(obj == null) return false;
+        return this == obj || this.getClass() == obj.getClass() && ((ImageViewIcon) obj).getExtension().equals(this.extension);
+    }
+
+    @Override
+    public int hashCode() {
+        return extension.hashCode();
     }
 }

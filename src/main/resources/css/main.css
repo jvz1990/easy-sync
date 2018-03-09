@@ -320,7 +320,10 @@
 *                                                                              *
 *******************************************************************************/
 
-.custom-jfx-button-raised .jfx-rippler {
+.custom-jfx-button-raised .jfx-rippler,
+.custom-jfx-button-raised-blue-small .jfx-rippler,
+.custom-jfx-button-raised-blue-medium .jfx-rippler,
+.custom-jfx-button-raised-small-blue .jfx-rippler {
     -jfx-rippler-fill: WHITE;
 }
 
@@ -331,6 +334,24 @@
     -fx-background-color: #5264AE;
     -fx-text-fill: WHITE;
     -fx-max-height: 23px;
+}
+
+.custom-jfx-button-raised-blue-medium {
+    -fx-padding: 0.6em 0.77em;
+    -fx-font-size: 14.0px;
+    -jfx-button-type: RAISED;
+    -fx-background-color: #5264AE;
+    -fx-text-fill: WHITE;
+    -fx-max-height: 27px;
+}
+
+.custom-jfx-button-raised-red-medium {
+    -fx-pref-height: 40px;
+    -jfx-button-type: RAISED;
+    -fx-text-fill: WHITE;
+    -fx-background-color: RED;
+    -fx-font-size: 14px;
+    -fx-padding: 0.6em 0.77em;
 }
 
 .custom-jfx-button-raised-green {
@@ -1083,7 +1104,7 @@
 }
 
 .test-css * {
-    -fx-padding: 2px 0!important;
+    -fx-padding: 2px 0 !important;
 }
 
 /*******************************************************************************
@@ -1118,10 +1139,10 @@
     -fx-padding: 0.7em 0.8em;
 }
 
-
-
-
-
 .jfx-button:hover {
-    -fx-cursor: hand;
+    -fx-cursor: hand !important;
+}
+
+.jfx-radio-button:hover {
+    -fx-cursor: hand !important;
 }

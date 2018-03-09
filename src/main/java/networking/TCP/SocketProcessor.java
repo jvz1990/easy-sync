@@ -213,8 +213,7 @@ public class SocketProcessor extends Thread implements Stopable {
                     else if (device.isFullAccess()) return DataState.sysRootFolder;
                     else if (device.isTrusted()) return DataState.rootFolder;
                     else return DataState.userFolder;
-                case GET_UNSAVED_FOLDER: // TODO working spot
-                    System.out.println("Should contain filePath:\n" + message.string[0]);
+                case GET_UNSAVED_FOLDER:
                     File file = new File(message.string[0]);
                     if(!file.isDirectory()) return null;
                     Folder folder = new Folder(file);

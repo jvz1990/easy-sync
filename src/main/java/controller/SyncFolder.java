@@ -15,6 +15,7 @@ import model.DataState;
 import model.DeviceTab;
 import model.Folder;
 import networking.TCP.Message;
+import util.General;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,29 +62,61 @@ public class SyncFolder implements Initializable {
         optionTwo.setText(deviceTab.getDevice().getMachineNameString());
         optionFour.setText(deviceTab.getDevice().getMachineNameString());
 
-        cancelButton.setOnMouseClicked(event -> {
-            root.close();
-            new Thread(() -> {
+        cancelButton.setOnMouseClicked(event -> closeThisWindow());
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        addButton.setOnMouseClicked(event -> {
+            if (optionOneTextField.getText().length() < 1 || optionTwoTextField.getText().length() < 1) return;
 
-                Platform.runLater(() -> Main.Holder.root.getChildren().remove(root));
+            String networkDir = optionTwo.isSelected() ? optionOneTextField.getText() : optionTwoTextField.getText();
+            String localDir = optionTwo.isSelected() ? optionTwoTextField.getText() : optionOneTextField.getText();
+            String syncName = "[" + General.getFileName(networkDir) + "] with [" + deviceTab.getDevice().getMachineNameString() + "]";
 
-            }).start();
+            model.SyncFolder syncFolder = new model.SyncFolder(
+                    !optionTwo.isSelected(),
+                    syncName,
+                    localDir,
+                    networkDir,
+                    deviceTab.getDevice().getUuid()
+            );
+
+            closeThisWindow();
+            deviceTab.createSyncFolder(syncFolder);
         });
 
         browseOne.setOnMouseClicked(event -> processBrowse(BUTTON.ONE));
         browseTwo.setOnMouseClicked(event -> processBrowse(BUTTON.TWO));
 
-        optionOne.setOnAction(event -> optionFour.setSelected(true));
-        optionThree.setOnAction(event -> optionTwo.setSelected(true));
+        optionOne.setOnAction(event -> {
+            optionFour.setSelected(true);
+            optionOneTextField.clear();
+            optionTwoTextField.clear();
+        });
+        optionThree.setOnAction(event -> {
+            optionTwo.setSelected(true);
+            optionOneTextField.clear();
+            optionTwoTextField.clear();
+        });
 
-        optionTwo.setOnAction(event -> optionThree.setSelected(true));
-        optionFour.setOnAction(event -> optionOne.setSelected(true));
+        optionTwo.setOnAction(event -> {
+            optionThree.setSelected(true);
+            optionOneTextField.clear();
+            optionTwoTextField.clear();
+        });
+        optionFour.setOnAction(event -> {
+            optionOne.setSelected(true);
+            optionOneTextField.clear();
+            optionTwoTextField.clear();
+        });
+    }
+
+    private void closeThisWindow() {
+        root.close();
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {}
+            Platform.runLater(() -> Main.Holder.root.getChildren().remove(root));
+        }).start();
     }
 
     private void processBrowse(BUTTON button) {
@@ -135,6 +168,7 @@ public class SyncFolder implements Initializable {
         fxmlLoader.setLocation(getClass().getResource("/fxml/DeviceFileBrowser.fxml"));
         FileFolderExplorer fileFolderExplorer = new FileFolderExplorer(folder, deviceTab.getDevice());
         fileFolderExplorer.createSyncButtons(field);
+        fileFolderExplorer.setStage(stage);
         fxmlLoader.setController(fileFolderExplorer);
         AnchorPane root = null;
         try {
@@ -145,7 +179,7 @@ public class SyncFolder implements Initializable {
         }
         JFXDecorator jfxDecorator = new JFXDecorator(stage, root);
         jfxDecorator.setCustomMaximize(true);
-        jfxDecorator.setText(deviceTab.getDevice().getMachineName().get() + " Select Folder");
+        jfxDecorator.setTitle(deviceTab.getDevice().getMachineName().get() + " Select Folder");
         jfxDecorator.setGraphic(new SVGGlyph(""));
 
         Scene scene = new Scene(jfxDecorator, DataState.screenWidth * 0.5, DataState.screenHeight * 0.5);

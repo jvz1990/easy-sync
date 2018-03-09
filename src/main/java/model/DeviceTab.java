@@ -25,16 +25,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class DeviceTab extends Tab implements Serializable {
 
     private static final long serialVersionUID = -1304640273772572274L;
-    private Device device;
-    private boolean tabOpened;
+    private transient Device device;
+    private transient boolean tabOpened;
+    private transient ArrayList<model.SyncFolder> syncFolders = new ArrayList<>(0);
+
+    private transient GridPane gridPane;
 
     public DeviceTab(final Device device) {
         this.device = device;
         this.tabOpened = true;
+
         createTab(device);
     }
 
@@ -45,7 +50,7 @@ public class DeviceTab extends Tab implements Serializable {
     }
 
     private Node createPane() {
-        final GridPane gridPane = new GridPane();
+        gridPane = new GridPane();
         gridPane.setVgap(5);
         gridPane.setHgap(5);
         gridPane.setPadding(new Insets(25.0));
@@ -54,7 +59,30 @@ public class DeviceTab extends Tab implements Serializable {
         createBrowseClient(gridPane);
         createSyncBtn(gridPane);
 
+        createSyncFolders();
+
         return gridPane;
+    }
+
+    private void createSyncFolders() {
+        int rowIndex = 3;
+        for (model.SyncFolder syncFolder : this.syncFolders) {
+            GridPane gp = new GridPane();
+            gp.setHgap(5.0);
+            Label label = new Label("Sync Folder: "  + syncFolder.getSyncName());
+            JFXButton removeSync = new JFXButton("Remove Sync");
+            removeSync.getStyleClass().add("custom-jfx-button-raised-red-medium");
+
+            gp.add(label, 0, 0);
+            gp.add(removeSync, 1, 0);
+
+            removeSync.setOnMouseClicked(event -> {
+                syncFolders.remove(syncFolder);
+                gridPane.getChildren().remove(gp);
+            });
+
+            gridPane.add(gp, 0, rowIndex++);
+        }
     }
 
     private void createSyncBtn(GridPane gridPane) {
@@ -69,7 +97,7 @@ public class DeviceTab extends Tab implements Serializable {
     private void syncSetupEvent() {
         //Check if trusted
 
-        if(!device.isOnline()) {
+        if (!device.isOnline()) {
             Main.Holder.snackbar.fireEvent(
                     new JFXSnackbar.SnackbarEvent(
                             "Device is offline!",
@@ -89,15 +117,15 @@ public class DeviceTab extends Tab implements Serializable {
 
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             message = (Message) objectInputStream.readObject();
-            if(message.command == Message.Commands.ERROR) {
+            if (message.command == Message.Commands.ERROR) {
                 Main.Holder.snackbar.fireEvent(
                         new JFXSnackbar.SnackbarEvent(device.getMachineNameString() + " does not trust you",
-                        "CLOSE",
-                        3000,
-                        true,
-                        b -> Main.Holder.snackbar.close()));
+                                "CLOSE",
+                                3000,
+                                true,
+                                b -> Main.Holder.snackbar.close()));
                 Main.Holder.scrollVbox.getChildren().add(0, new Label("Please make sure [" + device.getMachineNameString()
-                + "] has trusted you"));
+                        + "] has trusted you"));
             }
 
             objectInputStream.close();
@@ -108,12 +136,36 @@ public class DeviceTab extends Tab implements Serializable {
             e.printStackTrace();
         }
 
-        if(message.command == Message.Commands.ERROR) return;
+        if (message.command == Message.Commands.ERROR) return;
 
-        showCreateSyncDialog(message);
+        showCreateSyncDialog();
     }
 
-    private void showCreateSyncDialog(Message message) {
+    public void createSyncFolder(model.SyncFolder syncFolder) {
+
+        if (syncFolders.contains(syncFolder)) return;
+        syncFolders.add(syncFolder);
+
+        GridPane gp = new GridPane();
+        gp.setHgap(5.0);
+
+        Label label = new Label("Sync Folder: "  + syncFolder.getSyncName());
+        JFXButton removeSync = new JFXButton("Remove Sync");
+        removeSync.getStyleClass().add("custom-jfx-button-raised-red-medium");
+
+        gp.add(label, 0, 0);
+        gp.add(removeSync, 1, 0);
+
+        removeSync.setOnMouseClicked(event -> {
+            syncFolders.remove(syncFolder);
+            gridPane.getChildren().remove(gp);
+        });
+
+        Platform.runLater(() -> gridPane.add(gp, 0, gridPane.getRowCount() + 1));
+
+    }
+
+    private void showCreateSyncDialog() {
 
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("/fxml/Dialog.fxml"));
@@ -169,7 +221,7 @@ public class DeviceTab extends Tab implements Serializable {
                 AnchorPane root = fxmlLoader.load();
                 JFXDecorator jfxDecorator = new JFXDecorator(stage, root);
                 jfxDecorator.setCustomMaximize(true);
-                jfxDecorator.setText(device.getMachineName().get() + " Files & Folders");
+                jfxDecorator.setTitle(device.getMachineName().get() + " Files & Folders");
                 jfxDecorator.setGraphic(new SVGGlyph(""));
 
                 Scene scene = new Scene(jfxDecorator, DataState.screenWidth * 0.5, DataState.screenHeight * 0.5);
@@ -228,12 +280,18 @@ public class DeviceTab extends Tab implements Serializable {
         objectOutputStream.defaultWriteObject();
         objectOutputStream.writeObject(device);
         objectOutputStream.writeBoolean(tabOpened);
+        objectOutputStream.writeObject(syncFolders);
+    }
+
+    public void setSyncFolders(ArrayList<model.SyncFolder> syncFolders) {
+        this.syncFolders = syncFolders;
     }
 
     private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
         setDevice((Device) objectInputStream.readObject());
         setTabOpened(objectInputStream.readBoolean());
+        setSyncFolders((ArrayList<model.SyncFolder>) objectInputStream.readObject());
         createTab(device);
     }
 

@@ -117,9 +117,9 @@ public class DataState implements Serializable {
         objectOutputStream.writeUTF(machineName.getValueSafe());
         objectOutputStream.writeUTF(sharedFolder.getValueSafe());
         objectOutputStream.writeUTF(downloadFolder.getValueSafe());
-        objectOutputStream.writeObject(new ArrayList<Device>(deviceList));
-        objectOutputStream.writeObject(new ArrayList<DeviceTab>(deviceTabs));
-        objectOutputStream.writeObject(new ArrayList<UUID>(hiddenDevices));
+        objectOutputStream.writeObject(new ArrayList<>(deviceList));
+        objectOutputStream.writeObject(new ArrayList<>(deviceTabs));
+        objectOutputStream.writeObject(new ArrayList<>(hiddenDevices));
     }
 
     private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {

@@ -94,4 +94,39 @@ public class General {
         }
         return path;
     }
+
+    public static String getFileName(String filePath) {
+        if (filePath == null || filePath.length() == 0)
+            return "";
+        filePath = filePath.replaceAll("[/\\\\]+", "/");
+        int len = filePath.length(),
+                upCount = 0;
+        while (len > 0) {
+            //remove trailing separator
+            if (filePath.charAt(len - 1) == '/') {
+                len--;
+                if (len == 0)
+                    return "";
+            }
+            int lastInd = filePath.lastIndexOf('/', len - 1);
+            String fileName = filePath.substring(lastInd + 1, len);
+            switch (fileName) {
+                case ".":
+                    len--;
+                    break;
+                case "..":
+                    len -= 2;
+                    upCount++;
+                    break;
+                default:
+                    if (upCount == 0)
+                        return fileName;
+                    upCount--;
+                    len -= fileName.length();
+                    break;
+            }
+        }
+        return "";
+    }
+
 }
