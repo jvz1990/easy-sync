@@ -129,4 +129,13 @@ public class General {
         return "";
     }
 
+    public static String strRela(String absolute, String relative) {
+        if (!absolute.substring(absolute.length() - 1).equals(File.pathSeparator)) absolute += File.pathSeparator;
+        if (absolute.length() > relative.length()) {
+            return absolute.substring(relative.length());
+        } else {
+            return absolute;
+        }
+    }
+
 }
